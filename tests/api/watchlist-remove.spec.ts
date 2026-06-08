@@ -8,9 +8,19 @@ test.describe('AC2: remove a listing from the watchlist', () => {
   test('removes a previously added listing', async ({ watchlist, search }) => {
     const listingId = await search.findOpenListing();
 
-    // Arrange: ensure the listing is on the watchlist.
+    // Arrange: add the listing AND confirm it is genuinely on the watchlist
+    // first. Without this precondition the final not.toContain assertion would
+    // also pass if the add had silently failed (the API returns HTTP 200 with
+    // Success:false on logical failure) or if the item was never there — i.e.
+    // the test could go green without actually exercising removal.
     const addResponse = await watchlist.add(listingId);
     expect(addResponse.ok()).toBeTruthy();
+    const addBody = WatchListResponseSchema.parse(await addResponse.json());
+    expect(addBody.Success).toBe(true);
+
+    const beforeResponse = await watchlist.retrieve('All', { rows: 50 });
+    const beforeBody = WatchlistSchema.parse(await beforeResponse.json());
+    expect(beforeBody.List.map((item) => item.ListingId)).toContain(listingId);
 
     // Act: remove it.
     const removeResponse = await watchlist.remove(listingId);
@@ -18,11 +28,10 @@ test.describe('AC2: remove a listing from the watchlist', () => {
     const body = WatchListResponseSchema.parse(await removeResponse.json());
     expect(body.Success).toBe(true);
 
-    // Assert: it is no longer present.
-    const listResponse = await watchlist.retrieve('All', { rows: 50 });
-    const watchlistBody = WatchlistSchema.parse(await listResponse.json());
-    const ids = watchlistBody.List.map((item) => item.ListingId);
-    expect(ids).not.toContain(listingId);
+    // Assert: it is no longer present (a real before/after delta).
+    const afterResponse = await watchlist.retrieve('All', { rows: 50 });
+    const afterBody = WatchlistSchema.parse(await afterResponse.json());
+    expect(afterBody.List.map((item) => item.ListingId)).not.toContain(listingId);
   });
 
   test('removing a listing that is not on the watchlist does not error', async ({ watchlist }) => {
@@ -32,8 +41,11 @@ test.describe('AC2: remove a listing from the watchlist', () => {
 
     const response = await watchlist.remove(nonExistentListingId);
     expect(response.ok()).toBeTruthy();
-    // Body still parses as a WatchListResponse.
-    WatchListResponseSchema.parse(await response.json());
+    // "Will not produce an error" — so Success must be true, not merely a
+    // well-formed body. Asserting Success guards against a 200-with-Success:false
+    // regression that a bare parse would let through.
+    const body = WatchListResponseSchema.parse(await response.json());
+    expect(body.Success).toBe(true);
   });
 });
 

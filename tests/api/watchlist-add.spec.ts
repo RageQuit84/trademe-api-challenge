@@ -40,6 +40,8 @@ test.describe('AC1: add a listing to the watchlist', () => {
 
     const first = await watchlist.add(listingId);
     expect(first.ok()).toBeTruthy();
+    const firstBody = WatchListResponseSchema.parse(await first.json());
+    expect(firstBody.Success).toBe(true);
     added.push(listingId);
 
     const second = await watchlist.add(listingId);

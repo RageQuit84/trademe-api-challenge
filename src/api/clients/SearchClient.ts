@@ -19,23 +19,37 @@ export class SearchClient {
    * @param rows how many results to fetch (the first is used).
    */
   async findOpenListing(rows = 20): Promise<number> {
+    const [id] = await this.findOpenListings(1, rows);
+    return id;
+  }
+
+  /**
+   * Returns `count` distinct open ListingIds, for tests that need more than one
+   * piece of test data (e.g. seeding a multi-item watchlist to exercise paging).
+   * @param count how many distinct listings to return.
+   * @param rows how many search results to fetch (must be >= count).
+   */
+  async findOpenListings(count: number, rows = 20): Promise<number[]> {
     const response = await this.request.get('Search/General.json', {
       headers: this.auth.buildHeaders(),
-      params: { rows, page: 1 },
+      params: { rows: Math.max(rows, count), page: 1 },
     });
 
     if (!response.ok()) {
       throw new Error(
         `Search/General returned ${response.status()} ${response.statusText()} ` +
-          `while looking for a test listing.`,
+          `while looking for test listings.`,
       );
     }
 
     const result = SearchResultSchema.parse(await response.json());
-    if (result.List.length === 0) {
-      throw new Error('Search/General returned no open listings to use as test data.');
+    const ids = [...new Set(result.List.map((item) => item.ListingId))];
+    if (ids.length < count) {
+      throw new Error(
+        `Search/General returned only ${ids.length} distinct open listing(s); needed ${count}.`,
+      );
     }
 
-    return result.List[0].ListingId;
+    return ids.slice(0, count);
   }
 }
