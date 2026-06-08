@@ -60,3 +60,24 @@ The sandbox doesn't send emails. If you didn't see the welcome message when regi
 ### Q: My OAuth token stopped working
 
 Tokens expire if unused for 6+ months or if the account password changes. If you're getting 401s, generate a new token following the Authentication steps above.
+
+---
+
+## Solution
+
+This repo contains a TypeScript + Playwright test framework covering the watchlist
+acceptance criteria above against the deployed sandbox, plus a Pact consumer
+contract layer.
+
+See **[docs/TESTING.md](docs/TESTING.md)** for the full write-up: the testing
+layers and why they exist, the tools and frameworks used, acceptance-criteria
+coverage, project structure, setup, and CI.
+
+Quick start:
+
+```bash
+npm install
+cp .env.example .env     # fill in your sandbox credentials
+npm run test:api         # live API regression tests
+npm run test:contract    # Pact consumer contracts (no network)
+```

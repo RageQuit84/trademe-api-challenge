@@ -1,0 +1,34 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Test / build output
+dist/
+build/
+coverage/
+.pytest_cache/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Pact contract artifacts & logs
+pacts/
+logs/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

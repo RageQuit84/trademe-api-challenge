@@ -1,0 +1,48 @@
+name: API Regression Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  contract:
+    name: Consumer contract tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Contract tests use dummy credentials against a Pact mock provider,
+      # so they need no secrets and always run.
+      - run: npm run test:contract
+
+  api:
+    name: Live API regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run API tests against the sandbox
+        run: npm run test:api
+        env:
+          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+          CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
+          TOKEN: ${{ secrets.TOKEN }}
+          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+          API_BASE_URL: https://api.tmsandbox.co.nz/v1
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-api
+          path: playwright-report/
+          retention-days: 7
