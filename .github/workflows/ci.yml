@@ -24,6 +24,15 @@ jobs:
   api:
     name: Live API regression tests
     runs-on: ubuntu-latest
+    environment: sandbox
+    # Expose secrets as job-level env vars so step conditions can inspect them.
+    # When a secret is not configured its value is an empty string.
+    env:
+      CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
+      CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
+      TOKEN: ${{ secrets.TOKEN }}
+      TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
+      API_BASE_URL: https://api.tmsandbox.co.nz/v1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -32,13 +41,11 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Run API tests against the sandbox
+        # Skip when sandbox credentials are not configured (e.g. fork PRs where
+        # repository secrets are unavailable). The contract job always runs and
+        # catches structural regressions without requiring credentials.
+        if: env.CONSUMER_KEY != ''
         run: npm run test:api
-        env:
-          CONSUMER_KEY: ${{ secrets.CONSUMER_KEY }}
-          CONSUMER_SECRET: ${{ secrets.CONSUMER_SECRET }}
-          TOKEN: ${{ secrets.TOKEN }}
-          TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
-          API_BASE_URL: https://api.tmsandbox.co.nz/v1
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v4
@@ -46,3 +53,4 @@ jobs:
           name: playwright-report-api
           path: playwright-report/
           retention-days: 7
+          if-no-files-found: ignore
