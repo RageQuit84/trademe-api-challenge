@@ -36,3 +36,21 @@ test.describe('AC2: remove a listing from the watchlist', () => {
     WatchListResponseSchema.parse(await response.json());
   });
 });
+
+test.describe('AC2: remove — authentication required', () => {
+  test('request without authentication is rejected', async ({ request }) => {
+    const response = await request.delete('mytrademe/WatchList/1234.json');
+    expect(response.status()).toBe(401);
+  });
+
+  test('request with invalid credentials is rejected', async ({ request }) => {
+    const response = await request.delete('mytrademe/WatchList/1234.json', {
+      headers: {
+        Authorization:
+          'OAuth oauth_consumer_key="INVALID", oauth_token="INVALID", ' +
+          'oauth_signature_method="PLAINTEXT", oauth_signature="INVALID%26INVALID"',
+      },
+    });
+    expect(response.status()).toBe(401);
+  });
+});

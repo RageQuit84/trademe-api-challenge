@@ -48,3 +48,21 @@ test.describe('AC1: add a listing to the watchlist', () => {
     expect(body.Success).toBe(true);
   });
 });
+
+test.describe('AC1: add — authentication required', () => {
+  test('request without authentication is rejected', async ({ request }) => {
+    const response = await request.post('mytrademe/watchList/1234.json');
+    expect(response.status()).toBe(401);
+  });
+
+  test('request with invalid credentials is rejected', async ({ request }) => {
+    const response = await request.post('mytrademe/watchList/1234.json', {
+      headers: {
+        Authorization:
+          'OAuth oauth_consumer_key="INVALID", oauth_token="INVALID", ' +
+          'oauth_signature_method="PLAINTEXT", oauth_signature="INVALID%26INVALID"',
+      },
+    });
+    expect(response.status()).toBe(401);
+  });
+});
