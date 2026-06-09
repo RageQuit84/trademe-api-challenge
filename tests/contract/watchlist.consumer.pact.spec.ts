@@ -108,6 +108,50 @@ test.describe('Watchlist consumer contract', () => {
       });
   });
 
+  test('DELETE remove a listing the user has bid on is refused (Success:false)', async () => {
+    // The docs note: "an auction that the user has bid on cannot be removed."
+    // That precondition (having a bid) depends on other endpoints and lies
+    // outside the watchlist acceptance criteria, so it is awkward to set up in a
+    // live test. As a contract it is a natural fit: the provider mocks the
+    // "user has bid" state and we pin the response the consumer relies on.
+    //
+    // The endpoint still answers HTTP 200 (consistent with the WatchListResponse
+    // shape and the add docs' own {"Success": false, "Description": "..."}
+    // example) — the failure is carried in the body, NOT the status code. So the
+    // contract here is exactly the thing the consumer must honour: check Success,
+    // do not trust HTTP 200 alone.
+    await newPact()
+      .addInteraction()
+      .given('the user is authenticated and has bid on listing 1234, which is on their watchlist')
+      .uponReceiving('a request to remove listing 1234, which the user has bid on')
+      .withRequest('DELETE', `/mytrademe/WatchList/${LISTING_ID}.json`, (builder) => {
+        builder.headers({ Authorization: oauthHeader });
+      })
+      .willRespondWith(200, (builder) => {
+        builder.headers({ 'Content-Type': 'application/json' });
+        // Success is an exact literal — the whole point of this contract is that
+        // it must be false for this state. Description is any non-empty string
+        // (the exact wording is not contracted, only that a reason is given).
+        builder.jsonBody({
+          Success: false,
+          Description: string('This listing cannot be removed because you have bid on it.'),
+        });
+      })
+      .executeTest(async (mockServer) => {
+        const ctx = await request.newContext({ baseURL: mockServer.url });
+        const client = new WatchlistClient(ctx, dummyAuth);
+
+        const response = await client.remove(LISTING_ID);
+        // HTTP-level success, but the operation logically failed.
+        expect(response.ok()).toBeTruthy();
+        const body = WatchListResponseSchema.parse(await response.json());
+        expect(body.Success).toBe(false);
+        expect(body.Description).toBeTruthy();
+
+        await ctx.dispose();
+      });
+  });
+
   test('GET retrieve the watchlist', async () => {
     await newPact()
       .addInteraction()
