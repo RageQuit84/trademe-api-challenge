@@ -11,10 +11,10 @@ jobs:
     name: Consumer contract tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       # Contract tests use dummy credentials against a Pact mock provider,
@@ -34,10 +34,10 @@ jobs:
       TOKEN_SECRET: ${{ secrets.TOKEN_SECRET }}
       API_BASE_URL: https://api.tmsandbox.co.nz/v1
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - name: Run API tests against the sandbox
@@ -48,7 +48,7 @@ jobs:
         run: npm run test:api
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: playwright-report-api
           path: playwright-report/
