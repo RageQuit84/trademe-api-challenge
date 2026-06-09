@@ -81,3 +81,33 @@ cp .env.example .env     # fill in your sandbox credentials
 npm run test:api         # live API regression tests
 npm run test:contract    # Pact consumer contracts (no network)
 ```
+
+### Where this would go next
+
+A few deliberate scope decisions are worth calling out, as they shape where the
+remaining test value belongs rather than what's missing here:
+
+- **Contract testing — the team owns the provider side.** The Watchlist team
+  owns the watchlist API, so in a real setup it would be the *provider* in any
+  consumer-driven contract: publishing the API, then verifying incoming consumer
+  contracts against it (e.g. via a Pact broker in CI). The Pact specs in this
+  repo are written from the *consumer* perspective purely as an illustration of
+  how this team would interact with the teams that depend on the watchlist —
+  a worked example of the contract handshake, not the team's own production
+  contract suite.
+
+- **Edge cases belong closer to the code.** Cases like filter *semantics* (does
+  `ReserveMet` truly return only reserve-met items?) and pagination boundaries
+  (last-page remainders, out-of-range pages, off-by-one) were considered but
+  intentionally left out of this black-box suite. They can't be verified
+  deterministically against a shared sandbox where empty results are valid, and
+  they're far cheaper and more reliable as **integration tests against an
+  ephemeral, seeded database**, driven from the controllers in-process. That's
+  where this coverage should live.
+
+- **UI end-to-end as a complement.** If the deployed environment introduces
+  networking rules or access considerations — auth gateways, CORS, region/IP
+  restrictions, CDN or edge routing — that the API tests alone can't exercise, a
+  thin layer of **UI end-to-end tests** against the real environment would be a
+  sensible addition to confirm a user can actually reach and use their watchlist
+  through the full stack.
