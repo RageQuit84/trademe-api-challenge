@@ -31,7 +31,7 @@ Use whatever language or tooling you're comfortable with. Don't include personal
 The sandbox API uses OAuth 1.0 with PLAINTEXT signing. Here's how to get set up:
 
 1. Create a sandbox account at https://www.tmsandbox.co.nz/Members/Register.aspx
-2. Register a new application at https://www.trademe.co.nz/MyTradeMe/Api/RegisterNewApplication.aspx and get your Consumer Key and Consumer Secret
+2. Register a new application at https://www.tmsandbox.co.nz/MyTradeMe/Api/RegisterNewApplication.aspx and get your Consumer Key and Consumer Secret
 3. Generate an access token at https://developer.trademe.co.nz/api-overview/authentication. Enter your Consumer Key and Secret and you'll get an OAuth Token and Token Secret. You can ignore the sections on "Implementing the OAuth redirection-based authorization process" and "Implementing xAuth".
 4. Look at the instructions on https://developer.trademe.co.nz/api-overview/authentication/example-plaintext-workflow under the "Making your first request" header for instructions about how to create your auth header. For example, header should look like this:
 
