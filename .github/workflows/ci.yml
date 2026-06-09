@@ -48,7 +48,7 @@ jobs:
         run: npm run test:api
       - name: Upload Playwright report
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report-api
           path: playwright-report/
