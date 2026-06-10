@@ -1,5 +1,6 @@
 import { test, expect } from '../../src/fixtures/api.fixture';
 import { WatchListResponseSchema, WatchlistSchema } from '../../src/api/schemas/watchlist.schema';
+import { watchlistEndpoints } from '../../src/api/endpoints';
 
 /**
  * AC1 — A user should be able to add a listing to their watchlist.
@@ -53,12 +54,12 @@ test.describe('AC1: add a listing to the watchlist', () => {
 
 test.describe('AC1: add — authentication required', () => {
   test('request without authentication is rejected', async ({ request }) => {
-    const response = await request.post('mytrademe/watchList/1234.json');
+    const response = await request.post(watchlistEndpoints.add(1234));
     expect(response.status()).toBe(401);
   });
 
   test('request with invalid credentials is rejected', async ({ request }) => {
-    const response = await request.post('mytrademe/watchList/1234.json', {
+    const response = await request.post(watchlistEndpoints.add(1234), {
       headers: {
         Authorization:
           'OAuth oauth_consumer_key="INVALID", oauth_token="INVALID", ' +

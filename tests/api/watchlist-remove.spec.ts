@@ -1,5 +1,6 @@
 import { test, expect } from '../../src/fixtures/api.fixture';
 import { WatchListResponseSchema, WatchlistSchema } from '../../src/api/schemas/watchlist.schema';
+import { watchlistEndpoints } from '../../src/api/endpoints';
 
 /**
  * AC2 — A user should be able to remove items from their watchlist.
@@ -51,12 +52,12 @@ test.describe('AC2: remove a listing from the watchlist', () => {
 
 test.describe('AC2: remove — authentication required', () => {
   test('request without authentication is rejected', async ({ request }) => {
-    const response = await request.delete('mytrademe/WatchList/1234.json');
+    const response = await request.delete(watchlistEndpoints.remove(1234));
     expect(response.status()).toBe(401);
   });
 
   test('request with invalid credentials is rejected', async ({ request }) => {
-    const response = await request.delete('mytrademe/WatchList/1234.json', {
+    const response = await request.delete(watchlistEndpoints.remove(1234), {
       headers: {
         Authorization:
           'OAuth oauth_consumer_key="INVALID", oauth_token="INVALID", ' +

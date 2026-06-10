@@ -1,5 +1,6 @@
 import type { APIRequestContext, APIResponse } from '@playwright/test';
 import { OAuthPlaintext } from '../../core/auth/OAuthPlaintext';
+import { watchlistEndpoints } from '../endpoints';
 
 /**
  * Optional query parameters for retrieving the watchlist.
@@ -35,14 +36,14 @@ export class WatchlistClient {
 
   /** AC1 — add a listing to the watchlist. */
   async add(listingId: number): Promise<APIResponse> {
-    return this.request.post(`mytrademe/watchList/${listingId}.json`, {
+    return this.request.post(watchlistEndpoints.add(listingId), {
       headers: this.auth.buildHeaders(),
     });
   }
 
   /** AC2 — remove a listing from the watchlist. */
   async remove(listingId: number): Promise<APIResponse> {
-    return this.request.delete(`mytrademe/WatchList/${listingId}.json`, {
+    return this.request.delete(watchlistEndpoints.remove(listingId), {
       headers: this.auth.buildHeaders(),
     });
   }
@@ -52,7 +53,7 @@ export class WatchlistClient {
     filter: WatchlistFilter = 'All',
     query: WatchlistQuery = {},
   ): Promise<APIResponse> {
-    return this.request.get(`mytrademe/watchlist/${filter}.json`, {
+    return this.request.get(watchlistEndpoints.retrieve(filter), {
       headers: this.auth.buildHeaders(),
       params: toParams(query),
     });

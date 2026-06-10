@@ -1,5 +1,6 @@
 import { test, expect } from '../../src/fixtures/api.fixture';
 import { WatchlistSchema } from '../../src/api/schemas/watchlist.schema';
+import { watchlistEndpoints } from '../../src/api/endpoints';
 
 /**
  * AC3 — A user should only be able to view their own watchlist.
@@ -20,12 +21,12 @@ test.describe('AC3: a user only sees their own watchlist', () => {
   });
 
   test('request without authentication is rejected', async ({ request }) => {
-    const response = await request.get('mytrademe/watchlist/All.json');
+    const response = await request.get(watchlistEndpoints.retrieve('All'));
     expect(response.status()).toBe(401);
   });
 
   test('request with invalid credentials is rejected', async ({ request }) => {
-    const response = await request.get('mytrademe/watchlist/All.json', {
+    const response = await request.get(watchlistEndpoints.retrieve('All'), {
       headers: {
         Authorization:
           'OAuth oauth_consumer_key="INVALID", oauth_token="INVALID", ' +
